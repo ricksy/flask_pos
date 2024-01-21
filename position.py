@@ -3,7 +3,7 @@
 
 """
 
-from flask import Flask, render_template_string
+from flask import Flask, render_template
 from OpenSSL import SSL
 
 import folium
@@ -16,8 +16,9 @@ context = ('certs/cert.pem', 'certs/privkey.pem')
 def components():
     """Extract map components and put those on a page."""
     m = folium.Map(
-        width=800,
-        height=600,
+        location=[52.5200, 13.4050],
+        width='50%',
+        height='50%',
     )
     folium.plugins.LocateControl().add_to(m)
 
@@ -25,28 +26,8 @@ def components():
     header = m.get_root().header.render()
     body_html = m.get_root().html.render()
     script = m.get_root().script.render()
-
-    return render_template_string(
-        """
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    {{ header|safe }}
-                </head>
-                <body>
-                    <h1>Using components</h1>
-                    {{ body_html|safe }}
-                    <script>
-                        {{ script|safe }}
-                    </script>
-                    <p>Some text</p>
-                </body>
-            </html>
-        """,
-        header=header,
-        body_html=body_html,
-        script=script,
-    )
+    return render_template('index.html', header=header, body_html=body_html, script=script)
+ 
 
 
 if __name__ == "__main__":
