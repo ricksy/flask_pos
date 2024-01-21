@@ -1,23 +1,53 @@
-# get user coordinates
-#use flask and folium to create a page with a map widget where the user can click on a location and get the coordinates
+""" position.py
 
-from flask import Flask, render_template, request
+
+"""
+
+from flask import Flask, render_template_string
+from OpenSSL import SSL
+
 import folium
-
+import folium.plugins as plugins
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+context = ('certs/cert.pem', 'certs/privkey.pem')
 
-@app.route('/map', methods=['POST'])
-def map():
-    lat = request.form['lat']
-    lon = request.form['lon']
-    map = folium.Map(location=[lat, lon], zoom_start=10)
-    map.save('templates/map.html')
-    return render_template('map.html')
+@app.route("/")
+def components():
+    """Extract map components and put those on a page."""
+    m = folium.Map(
+        width=800,
+        height=600,
+    )
+    folium.plugins.LocateControl().add_to(m)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    m.get_root().render()
+    header = m.get_root().header.render()
+    body_html = m.get_root().html.render()
+    script = m.get_root().script.render()
 
+    return render_template_string(
+        """
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    {{ header|safe }}
+                </head>
+                <body>
+                    <h1>Using components</h1>
+                    {{ body_html|safe }}
+                    <script>
+                        {{ script|safe }}
+                    </script>
+                    <p>Some text</p>
+                </body>
+            </html>
+        """,
+        header=header,
+        body_html=body_html,
+        script=script,
+    )
+
+
+if __name__ == "__main__":
+    app.run(host='faraskur.com', port=8080, threaded=True, ssl_context=context, debug=True)
